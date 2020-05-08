@@ -25,7 +25,7 @@ class HealthMonitorTest(unittest.TestCase):
         mock_get.return_value = mock_response
         result = self._web_monitor.check()
         self.assertEqual(mock_response.status_code, result["status_code"])
-        self.assertEqual(mock_response.elapsed, result["response_time_in_sec"])
+        self.assertEqual(mock_response.elapsed.total_seconds(), result["response_time_in_sec"])
         self.assertEqual(True, result["pattern_found"])
 
     @mock.patch.object(requests, "request")
@@ -37,7 +37,7 @@ class HealthMonitorTest(unittest.TestCase):
         mock_get.return_value = mock_response
         result = self._web_monitor.check()
         self.assertEqual(mock_response.status_code, result["status_code"])
-        self.assertEqual(mock_response.elapsed, result["response_time_in_sec"])
+        self.assertEqual(mock_response.elapsed.total_seconds(), result["response_time_in_sec"])
         self.assertEqual(False, result["pattern_found"])
 
     @mock.patch.object(requests, "request")

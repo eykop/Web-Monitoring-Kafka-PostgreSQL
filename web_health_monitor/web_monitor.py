@@ -37,13 +37,18 @@ class HealthMonitor:
                     response_time: a timedelta the for response time.
                     pattern_found:  a bool reflects if the verification regex was match in the response body or not.
         """
+        match_string = ""
         try:
             before_request = datetime.now()
             response = requests.request(self._request_type, self._url, params=params, **kwargs)
             status_code = response.status_code
             content = response.content.decode('utf-8')
-            response_time = response.elapsed
-            has_pattern_in_response_body = self._verification_regex.search(content) != None
+            response_time = response.elapsed.total_seconds()
+
+            match = self._verification_regex.search(content)
+            has_pattern_in_response_body = match is not None
+            if has_pattern_in_response_body:
+                match_string = match.group()
 
         except (requests.exceptions.ConnectionError, urllib3.exceptions.NewConnectionError) as err:
             time_delta = datetime.now() - before_request
@@ -52,6 +57,10 @@ class HealthMonitor:
             has_pattern_in_response_body = False
 
         return {"status_code": status_code,
+                "url": self._url,
+                "method": self._request_type,
+                "pattern": self._verification_regex.__str__(),
+                "matches": match_string,
                 "response_time_in_sec": response_time,
                 "pattern_found": has_pattern_in_response_body}
 
