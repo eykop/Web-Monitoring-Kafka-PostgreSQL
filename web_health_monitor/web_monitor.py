@@ -1,11 +1,9 @@
 """Module to to monitor health of a given website"""
-from datetime import timedelta, datetime
-
-import requests
-from http import HTTPStatus
 import re
-
-from urllib3.exceptions import NewConnectionError
+import requests
+import urllib3
+from datetime import datetime
+from http import HTTPStatus
 
 
 class HealthMonitor:
@@ -28,26 +26,33 @@ class HealthMonitor:
         self._success_status = http_success_status_code
         self._verification_regex = re.compile(regex_to_verify)
 
-    def check(self, *params, **kwargs):
+    def check(self, *params, **kwargs) -> dict:
         """
         Performs the check request.
         :param params: (optional) Dictionary, list of tuples or bytes to send
         in the query string.
         :param kwargs:
-        :return: tuple of (int, timedelta, bool), where:
-                    int: the response status code.
-                    timedelta: the response time.
-                    bool: reflects if the verification regex was match in the response body or not.
+        :return: dict of (status_code, response_time, pattern_found), where:
+                    status_code: an int representing the response status code.
+                    response_time: a timedelta the for response time.
+                    pattern_found:  a bool reflects if the verification regex was match in the response body or not.
         """
         try:
             before_request = datetime.now()
             response = requests.request(self._request_type, self._url, params=params, **kwargs)
-        except (requests.exceptions.ConnectionError, NewConnectionError) as err:
+            status_code = response.status_code
+            content = response.content.decode('utf-8')
+            response_time = response.elapsed
+            has_pattern_in_response_body = self._verification_regex.search(content) != None
+
+        except (requests.exceptions.ConnectionError, urllib3.exceptions.NewConnectionError) as err:
             time_delta = datetime.now() - before_request
-            return HTTPStatus.NOT_FOUND, time_delta, False
-        status_code = response.status_code
-        content = response.content.decode('utf-8')
-        response_time = response.elapsed
-        has_pattern_in_response_body = self._verification_regex.search(content) != None
-        return status_code, response_time, has_pattern_in_response_body
+            status_code = HTTPStatus.NOT_FOUND
+            response_time = time_delta.total_seconds()
+            has_pattern_in_response_body = False
+
+        return {"status_code": status_code,
+                "response_time_in_sec": response_time,
+                "pattern_found": has_pattern_in_response_body}
+
 
