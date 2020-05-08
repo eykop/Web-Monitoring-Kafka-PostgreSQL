@@ -1,7 +1,9 @@
 """Helper module for kafka producer and consumer implemenations"""
 
+from abc import ABC, abstractmethod
 
-class KafkaHelperBase:
+
+class KafkaHelperBase(ABC):
     """Base class for Kafka consumer and producer"""
 
     def __init__(self, server_address: str, topic: str):
@@ -12,5 +14,12 @@ class KafkaHelperBase:
         """
         self._server_address = server_address
         self._topic = topic
+
+    def connect(self) -> bool:
+        raise NotImplementedError
+
+    @abstractmethod
+    def close(self):
+        raise NotImplementedError
 
 

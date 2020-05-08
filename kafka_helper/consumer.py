@@ -44,3 +44,4 @@ class Consumer(KafkaHelperBase):
         """
         for msg in self._consumer:
             message_handler(msg)
+
