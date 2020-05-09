@@ -34,11 +34,11 @@ class PostgreSqlClient:
             self._cursor = self._connection.cursor()
 
             # execute a statement
-            print('PostgreSQL database version:')
             self._cursor.execute('SELECT version()')
 
             # display the PostgreSQL database server version
             db_version = self._cursor.fetchone()
+            log.debug('PostgreSQL database version: %s', db_version)
 
             log.info("Successfully connected to PosgreSQL server %s, version %s", host, db_version)
 
@@ -102,12 +102,10 @@ class PostgreSqlClient:
             log.error("An error occurred during insertion of result to data base table table %s , details: %s",
                       table, error)
 
-
     def execute_query(self, query):
         self._cursor.execute(query)
         # commit the changes
         self._connection.commit()
-
 
     def close(self):
         """Closes sql server connection"""
