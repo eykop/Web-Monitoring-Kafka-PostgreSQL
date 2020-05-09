@@ -12,8 +12,8 @@ log = logging.getLogger("kafka_consumer_helper")
 class Consumer(KafkaHelperBase):
     """Kafka Consumer Client"""
 
-    def __init__(self, server_address: str, topic: str):
-        super().__init__(server_address, topic)
+    def __init__(self, host: str, topic: str, *args, **kwargs):
+        super().__init__(host, topic)
         self._consumer = None
 
     def connect(self) -> bool:
@@ -23,11 +23,11 @@ class Consumer(KafkaHelperBase):
         """
         # TODO add support for *args and **kwarsg
         try:
-            self._consumer = KafkaConsumer(self._topic, bootstrap_servers=[self._server_address],
+            self._consumer = KafkaConsumer(self._topic, bootstrap_servers=[self._host],
                                            auto_offset_reset='earliest')
         except (KafkaConfigurationError, NoBrokersAvailable) as error:
             log.error("Error occurred when connecting to Kafka server %s, details: %s",
-                      self._server_address, error)
+                      self._host, error)
 
         return self.connected
 
@@ -44,4 +44,8 @@ class Consumer(KafkaHelperBase):
         """
         for msg in self._consumer:
             message_handler(msg)
+
+    def close(self):
+        if self.connected:
+            self._consumer.close()
 

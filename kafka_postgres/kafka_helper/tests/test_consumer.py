@@ -3,7 +3,7 @@ from unittest import mock
 
 from kafka.errors import NoBrokersAvailable
 
-from kafka_helper.consumer import Consumer
+from ..consumer import Consumer
 
 
 class ConsumerTest(unittest.TestCase):

@@ -12,8 +12,8 @@ log = logging.getLogger("kafka_producer_helper")
 class Producer(KafkaHelperBase):
     """Kafka Producer Client"""
 
-    def __init__(self, server_address: str, topic: str):
-        super().__init__(server_address, topic)
+    def __init__(self, host: str, topic: str, *args, **kwargs):
+        super().__init__(host, topic)
         self._producer = None
 
     def connect(self) -> bool:
@@ -22,10 +22,10 @@ class Producer(KafkaHelperBase):
         :returns bool, True if connection is established, False otherwise.
         """
         try:
-            self._producer = KafkaProducer(bootstrap_servers=[self._server_address])
+            self._producer = KafkaProducer(bootstrap_servers=[self._host])
         except (KafkaConfigurationError, NoBrokersAvailable) as error:
             log.error("Error occurred when connecting to Kafka server %s, details: %s",
-                      self._server_address, error)
+                      self._host, error)
 
         return self.connected
 
@@ -44,6 +44,10 @@ class Producer(KafkaHelperBase):
                 self._producer.flush()
             except KafkaTimeoutError as error:
                 log.error("Error occurred when sending to Kafka server %s, for the following topic %s, details: %s",
-                          self._server_address, self._topic, error)
+                          self._host, self._topic, error)
         else:
             log.warning("Could not send data, producer is not connected to Kafka server.")
+
+    def close(self):
+        if self.connected:
+            self._producer.close()

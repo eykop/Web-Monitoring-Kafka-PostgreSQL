@@ -3,7 +3,7 @@ from unittest import mock
 
 from kafka.errors import NoBrokersAvailable
 
-from kafka_helper.producer import Producer
+from ..producer import Producer
 
 
 class ProducerTest(unittest.TestCase):
