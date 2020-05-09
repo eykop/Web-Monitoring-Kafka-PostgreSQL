@@ -57,6 +57,7 @@ class HealthMonitor:
             has_pattern_in_response_body = False
 
         return {"status_code": status_code,
+                "status_ok": status_code == HTTPStatus.OK,
                 "url": self._url,
                 "method": self._request_type,
                 "pattern": self._verification_regex.__str__(),
