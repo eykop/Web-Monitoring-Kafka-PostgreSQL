@@ -5,6 +5,8 @@ import urllib3
 from datetime import datetime
 from http import HTTPStatus
 
+from kafka_postgres.definitions.keys import MessageJsonKeys
+
 
 class HealthMonitor:
     """HealthMonitor provide services to monitor status of a website"""
@@ -12,7 +14,8 @@ class HealthMonitor:
     def __init__(self, url: str,
                  http_request_type: str = "get",
                  regex_to_verify: str = None,
-                 http_success_status_code: HTTPStatus = HTTPStatus.OK):
+                 http_success_status_code: HTTPStatus = HTTPStatus.OK,
+                 monitor_interval_in_sec: int = 10):
         """
         Initialize HealthMonitor instance, it uses the provided arguments to perform the health check.
 
@@ -20,11 +23,13 @@ class HealthMonitor:
         :param http_request_type: the http request type.
         :param regex_to_verify: a regular expression to verify it appears on the http request response body.
         :param http_success_status_code: the http response status code to consider as success.
+        :param monitor_interval_in_sec: interval to wait between checks.
         """
         self._url = url
         self._request_type = http_request_type
         self._success_status = http_success_status_code
         self._verification_regex = re.compile(regex_to_verify)
+        self._sampling_interval = monitor_interval_in_sec
 
     def check(self, *params, **kwargs) -> dict:
         """
@@ -56,13 +61,20 @@ class HealthMonitor:
             response_time = time_delta.total_seconds()
             has_pattern_in_response_body = False
 
-        return {"status_code": status_code,
-                "status_ok": status_code == HTTPStatus.OK,
-                "url": self._url,
-                "method": self._request_type,
-                "pattern": self._verification_regex.__str__(),
-                "matches": match_string,
-                "response_time_in_sec": response_time,
-                "pattern_found": has_pattern_in_response_body}
+        return {
+            MessageJsonKeys.STATUS_CODE: status_code,
+            MessageJsonKeys.STATUS_CODE_OK:  status_code == HTTPStatus.OK,
+            MessageJsonKeys.URL: self._url,
+            MessageJsonKeys.METHOD: self._request_type,
+            MessageJsonKeys.PATTERN: self._verification_regex.__str__(),
+            MessageJsonKeys.MATCHES: match_string,
+            MessageJsonKeys.RESPONSE_TIME_SECS: response_time,
+            MessageJsonKeys.IS_PATTER_FOUND: has_pattern_in_response_body
+        }
+
+    @property
+    def monitor_interval_in_sec(self) -> int:
+        """Returns the monitor interval in seconds"""
+        return self._monitor_interval_in_sec
 
 
