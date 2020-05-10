@@ -5,6 +5,7 @@ import os
 import sys
 from json import JSONDecodeError
 
+from kafka_postgres.definitions.keys import MessageJsonKeys
 from kafka_postgres.kafka_helper.consumer import Consumer
 from kafka_postgres.postgresql_helper.exceptions import DataBaseOperationError
 from kafka_postgres.postgresql_helper.postgresql_helper import PostgreSqlClient
@@ -24,14 +25,36 @@ def start_kafka_consumer(kafka_config: dict, postgresql_config: dict):
             consumer.close()
             client.close()
             log.error("Configuration value missing from config file:  %s", key_error)
+        messages_bulk = []
 
         def insert_to_tbl(data: str):
+            """helper internal method to act as the lambda function for the consumer read"""
+
             log.debug("message: %s", data)
             try:
                 json_data = json.loads(data)
                 # json_data["pattern"] = json_data["pattern"].replace("\"", "\'")
                 json_data["pattern"] = '%s'%json_data["pattern"].replace("'", "\"")
-                client.bulk_insert_monitoring_results(json_data)
+                messages_bulk.append(
+                    (json_data[MessageJsonKeys.URL],
+                     json_data[MessageJsonKeys.STATUS_CODE],
+                     json_data[MessageJsonKeys.STATUS_CODE] != 200,
+                     json_data[MessageJsonKeys.RESPONSE_TIME_SECS],
+                     json_data[MessageJsonKeys.METHOD],
+                     json_data[MessageJsonKeys.IS_PATTER_FOUND],
+                     json_data[MessageJsonKeys.PATTERN],
+                     json_data[MessageJsonKeys.MATCHES][:255])
+                )
+                if len(messages_bulk) >= consumer.bulk_count:
+                    client.bulk_insert_monitoring_results(messages_bulk)
+                    messages_bulk.clear()
+                else:
+                    if len(messages_bulk) < consumer.bulk_count:
+                        log.debug(
+                            "Bulk insert limit to web monitoring, not reached yet current %d - required %d .",
+                            len(messages_bulk),
+                            consumer.bulk_count)
+
             except JSONDecodeError as json_error:
                 log.error("Failed to decode message to json: %s.", json_error)
 

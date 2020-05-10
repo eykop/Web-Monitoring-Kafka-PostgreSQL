@@ -21,8 +21,7 @@ class PostgreSqlClient:
                  database: str,
                  user: str,
                  password: str,
-                 table_name: str,
-                 bulk_count_insert: int = 10):
+                 table_name: str):
         """
         Initialize the client.
         :param host: database server address e.g., localhost or an IP address
@@ -30,16 +29,12 @@ class PostgreSqlClient:
         :param user: the username used to authenticate.
         :param password: password used to authenticate.
         :param table_name: the db table name to perform the queries on.
-        :param bulk_count_insert: if to perform a bulk insert or single insert(in real case this needs to be a large
-        number something like 1000 to be useful).
         """
         self._host = host
         self._database = database
         self._user = user
         self._password = password
         self._table_name = table_name
-        self._bulk_count_insert = int(bulk_count_insert)
-        self._bulk_list = []
         self._connection = None
         self._cursor = None
 
@@ -99,30 +94,12 @@ class PostgreSqlClient:
         except psycopg2.errors.DuplicateTable as error:
             log.warning("Sql table %s exists: %s.", self._table_name, error)
 
-    def bulk_insert_monitoring_results(self, result: dict):
+    def bulk_insert_monitoring_results(self, results: list):
         """Inserts a bulk of results to db table at once if a predefined bulk count is reached.
-        :param result: the wbe check result.
+        :param results: the wbe check results list.
         """
-        self._bulk_list.append(
-            (result[MessageJsonKeys.URL],
-             result[MessageJsonKeys.STATUS_CODE],
-             result[MessageJsonKeys.STATUS_CODE] != 200,
-             result[MessageJsonKeys.RESPONSE_TIME_SECS],
-             result[MessageJsonKeys.METHOD],
-             result[MessageJsonKeys.IS_PATTER_FOUND],
-             result[MessageJsonKeys.PATTERN],
-             result[MessageJsonKeys.MATCHES][:255])
-        )
+        current_list_size = len(results)
 
-        current_list_size = len(self._bulk_list)
-
-        if current_list_size < self._bulk_count_insert:
-            log.debug("Bulk insert limit to web monitoring table %s , not reached yet current %d - required %d .",
-                      self._table_name,
-                      current_list_size,
-                      self._bulk_count_insert)
-            return
-        """ insert a new web check into the vendors table """
         sql = f"""INSERT INTO {self._table_name}(url, status_code, status_ok, response_time, check_method, 
                   pattern_matched, requested_pattern, matched_text) VALUES %s;"""
 
@@ -130,7 +107,7 @@ class PostgreSqlClient:
         sql = sql % var_string
         try:
 
-            self._cursor.execute(sql, tuple(self._bulk_list))
+            self._cursor.execute(sql, tuple(results))
             self._connection.commit()
         except (psycopg2.errors.DatatypeMismatch,
                 psycopg2.errors.SyntaxError,

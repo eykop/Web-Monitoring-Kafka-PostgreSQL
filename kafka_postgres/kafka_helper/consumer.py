@@ -12,9 +12,10 @@ log = logging.getLogger("kafka_consumer_helper")
 class Consumer(KafkaHelperBase):
     """Kafka Consumer Client"""
 
-    def __init__(self, host: str, topic: str, *args, **kwargs):
+    def __init__(self, host: str, topic: str, bulk_count: int, *args, **kwargs):
         super().__init__(host, topic)
         self._consumer = None
+        self._bulk_count = int(bulk_count)
 
     def connect(self) -> bool:
         """
@@ -48,4 +49,8 @@ class Consumer(KafkaHelperBase):
     def close(self):
         if self.connected:
             self._consumer.close()
+
+    @property
+    def bulk_count(self):
+        return self._bulk_count
 

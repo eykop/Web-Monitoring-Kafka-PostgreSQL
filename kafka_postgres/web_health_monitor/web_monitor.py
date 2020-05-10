@@ -6,6 +6,7 @@ from datetime import datetime
 from http import HTTPStatus
 
 from kafka_postgres.definitions.keys import MessageJsonKeys
+from kafka_postgres.web_health_monitor.exceptions import WebMonitorException
 
 
 class HealthMonitor:
@@ -28,8 +29,9 @@ class HealthMonitor:
         self._url = url
         self._request_type = http_request_type
         self._success_status = http_success_status_code
+        self._raw_regex = regex_to_verify
         self._verification_regex = re.compile(regex_to_verify)
-        self._sampling_interval = monitor_interval_in_sec
+        self._sampling_interval = int(monitor_interval_in_sec)
 
     def check(self, *params, **kwargs) -> dict:
         """
@@ -60,13 +62,14 @@ class HealthMonitor:
             status_code = HTTPStatus.NOT_FOUND
             response_time = time_delta.total_seconds()
             has_pattern_in_response_body = False
+            raise WebMonitorException(err)
 
         return {
             MessageJsonKeys.STATUS_CODE: status_code,
             MessageJsonKeys.STATUS_CODE_OK:  status_code == HTTPStatus.OK,
             MessageJsonKeys.URL: self._url,
             MessageJsonKeys.METHOD: self._request_type,
-            MessageJsonKeys.PATTERN: self._verification_regex.__str__(),
+            MessageJsonKeys.PATTERN: self._raw_regex,
             MessageJsonKeys.MATCHES: match_string,
             MessageJsonKeys.RESPONSE_TIME_SECS: response_time,
             MessageJsonKeys.IS_PATTER_FOUND: has_pattern_in_response_body
@@ -75,6 +78,6 @@ class HealthMonitor:
     @property
     def monitor_interval_in_sec(self) -> int:
         """Returns the monitor interval in seconds"""
-        return self._monitor_interval_in_sec
+        return self._sampling_interval
 
 

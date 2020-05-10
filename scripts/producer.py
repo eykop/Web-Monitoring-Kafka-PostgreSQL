@@ -7,8 +7,9 @@ import sys
 
 from kafka_postgres.settings import settings
 from kafka_postgres.kafka_helper.producer import Producer
-from kafka_postgres.settings.exceptions import ConfigurationFileNotFoundException
+from kafka_postgres.web_health_monitor.exceptions import WebMonitorException
 from kafka_postgres.web_health_monitor.web_monitor import HealthMonitor
+from kafka_postgres.settings.exceptions import ConfigurationException
 
 log = logging.getLogger("kafka_producer_script")
 logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.DEBUG)
@@ -24,27 +25,27 @@ def start_kafka_producer(kafka_config: dict, web_monitor_config: dict):
 
         if producer.connect():
             log.info("Successfully connected to Kafka, starting to consume an process messages. ")
-        if not producer.connected:
-            log.error("producer is not connected to Kafka server, existing ...")
-            sys.exit(1)
 
-        health_monitor = HealthMonitor(**web_monitor_config)
+            health_monitor = HealthMonitor(**web_monitor_config)
+            check_counter = 0
+            while True:
+                data = health_monitor.check()
+                check_counter += 1
+                log.debug("message: %s", json.dumps(data))
+                producer.send(json.dumps(data))
 
-        while True:
-            data = health_monitor.check()
-            log.debug("message: %s", json.dumps(data))
-            producer.send(json.dumps(data))
+                if check_counter >= producer.bulk_count:
+                    producer.client.flush()
+                    check_counter = 0
 
-            # TODO flush on given bulk count and not every message!
-            #  plus this private and  should not be done from here!
-            producer._producer.flush()
-
-            # TODO sleep should be configrable similar as flush bulk count
-            time.sleep(10)
+                time.sleep(health_monitor.monitor_interval_in_sec)
+    except WebMonitorException as wm_error:
+        log.error("An Error occurred during web monitoring, details: %s",wm_error)
+        sys.exit(1)
 
     except KeyboardInterrupt:
         print("\n")
-        print("Recived Ctrl-C, closing connection and existing...")
+        print("Received Ctrl-C, closing connection and existing...")
         producer.close()
         sys.exit(0)
 
@@ -75,7 +76,7 @@ if __name__ == "__main__":
 
         # start reporting to postgres db while consuming form Kafka
         start_kafka_producer(kafka_config, web_monitor_config)
-    except ConfigurationFileNotFoundException as error:
+    except ConfigurationException as error:
         log.error("An error occurred, %s", error)
 
 
