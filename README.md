@@ -7,7 +7,7 @@ The Kafka consumer will consume the results which in turn will be saved in Postg
 
 ---
 
-# Run environment and requirement
+## Run environment and requirement
 
 To be able to run we will need to prepare a working environment with the 
 following requirements:
@@ -38,7 +38,7 @@ docker run -d -p 5432:5432 --name my-postgres -e POSTGRES_PASSWORD=mysecretpassw
 
 ---
 
-# Python Virtual Environment
+## Python Virtual Environment
 
 We will assume that we already have Python3 installed, if not python can be downloaded 
 and installed from https://www.python.org . 
@@ -68,7 +68,7 @@ pip3 install -r requirements.txt
 
 ---
 
-# PostgreSQL Database and Table creation
+## PostgreSQL Database and Table creation
 
 Before we run, we need to create the database and the database table for the Web monitor to be able to
 write entries to.
@@ -131,7 +131,7 @@ Indexes:
 
 ---
 
-# Configuration file
+## Configuration file
 There are several option in the configuration file, it will make our life easier than passing endless command line 
 arguments - please note here - the sections and keys names are case sensitives and should not be changed otherwise 
 when we run nothing will work.
@@ -192,7 +192,7 @@ Here we provide the web monitor several options, so it can be used with to monit
 get, when regex_to_verify value is empty no check will be done.
 
 
-# Run the Web Monitor
+## Run the Web Monitor
 open a terminal and cd to web_monitor repository folder
 To run the producer :
 ```
@@ -204,10 +204,10 @@ To run the consumer :
 python -m scripts.consumer -c ./configuration.ini
 ```
 
-# Tests:
+## Tests:
 There some some unittests for each one of the components, they are regular python unit tests and can be run easily.
 
-# Future Improvements:
+## Future Improvements:
 * Authentication with Kafka.
 * Better SQL tables (separate static ad dynamic data between 2 tables.)
 * Allow Post, Delete, Options web methods for monitoring.
@@ -216,7 +216,7 @@ There some some unittests for each one of the components, they are regular pytho
 * Use Kafka Connectors(using Debezium) to sink results directly into the database. 
 
 
-# Acknowledgments
+## Acknowledgments
 1. Maria Patterson for her excellent article on 
 [Data Stream Processing for Newbies with Kafka, KSQL, and Postgres](https://medium.com/high-alpha/data-stream-processing-for-newbies-with-kafka-ksql-and-postgres-c30309cfaaf8) and mainly her docker compose
 2. postgresqltutorial for [postgresql-python tutorial](https://www.postgresqltutorial.com/postgresql-python/)
