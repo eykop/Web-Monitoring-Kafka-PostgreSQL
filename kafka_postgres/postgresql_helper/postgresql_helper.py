@@ -38,7 +38,7 @@ class PostgreSqlClient:
         self._user = user
         self._password = password
         self._table_name = table_name
-        self._bulk_count_insert = bulk_count_insert
+        self._bulk_count_insert = int(bulk_count_insert)
         self._bulk_list = []
         self._connection = None
         self._cursor = None
@@ -103,18 +103,20 @@ class PostgreSqlClient:
         """Inserts a bulk of results to db table at once if a predefined bulk count is reached.
         :param result: the wbe check result.
         """
-        self._bulk_list.append((result[MessageJsonKeys.URL],
-                                result[MessageJsonKeys.STATUS_CODE],
-                                result[MessageJsonKeys.STATUS_CODE] != 200,
-                                result[MessageJsonKeys.RESPONSE_TIME_SECS],
-                                result[MessageJsonKeys.METHOD],
-                                result[MessageJsonKeys.IS_PATTER_FOUND],
-                                result[MessageJsonKeys.PATTERN],
-                                result[MessageJsonKeys.MATCHES][:255]))
+        self._bulk_list.append(
+            (result[MessageJsonKeys.URL],
+             result[MessageJsonKeys.STATUS_CODE],
+             result[MessageJsonKeys.STATUS_CODE] != 200,
+             result[MessageJsonKeys.RESPONSE_TIME_SECS],
+             result[MessageJsonKeys.METHOD],
+             result[MessageJsonKeys.IS_PATTER_FOUND],
+             result[MessageJsonKeys.PATTERN],
+             result[MessageJsonKeys.MATCHES][:255])
+        )
 
         current_list_size = len(self._bulk_list)
 
-        if  current_list_size < self._bulk_count_insert:
+        if current_list_size < self._bulk_count_insert:
             log.debug("Bulk insert limit to web monitoring table %s , not reached yet current %d - required %d .",
                       self._table_name,
                       current_list_size,
@@ -122,11 +124,16 @@ class PostgreSqlClient:
             return
         """ insert a new web check into the vendors table """
         sql = f"""INSERT INTO {self._table_name}(url, status_code, status_ok, response_time, check_method, 
-                            pattern_matched, requested_pattern, matched_text) VALUES (%s)"""
+                  pattern_matched, requested_pattern, matched_text) VALUES %s;"""
+
+        var_string = ', '.join(['%s'] * current_list_size)
+        sql = sql % var_string
         try:
-            self._cursor.execute(sql, self._bulk_list)
+
+            self._cursor.execute(sql, tuple(self._bulk_list))
             self._connection.commit()
         except (psycopg2.errors.DatatypeMismatch,
+                psycopg2.errors.SyntaxError,
                 psycopg2.errors.InvalidTextRepresentation,
                 psycopg2.errors.UndefinedColumn,
                 psycopg2.errors.NotNullViolation,
@@ -157,6 +164,7 @@ class PostgreSqlClient:
                 psycopg2.errors.UndefinedColumn,
                 psycopg2.errors.NotNullViolation,
                 psycopg2.errors.UndefinedTable,
+                psycopg2.errors.SyntaxError,
                 TypeError) as error:
             log.error("An error occurred during insertion of result to data base table table %s , details: %s",
                       self._table_name, error)

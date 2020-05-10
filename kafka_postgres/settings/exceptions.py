@@ -3,15 +3,15 @@ Module that define custom exception for reading and parsing configuration file.
 """
 
 
-class ConfigurationBaseException(Exception):
+class ConfigurationException(Exception):
     pass
 
 
-class ConfigurationFileNotFoundException(ConfigurationBaseException):
+class ConfigurationFileNotFoundException(ConfigurationException):
     pass
 
 
-class ConfigurationSectionMissingException(ConfigurationBaseException):
+class ConfigurationSectionMissingException(ConfigurationException):
     pass
 
 
