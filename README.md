@@ -220,6 +220,9 @@ There some some unittests for each one of the components, they are regular pytho
 * Add some more unittests.
 * Use Kafka Connectors(using Debezium) to sink results directly into the database. 
 
+## License
+
+This project is licensed under the MIT License - see the LICENSE.md file for details
 
 ## Acknowledgments
 1. Maria Patterson for her excellent article on 
