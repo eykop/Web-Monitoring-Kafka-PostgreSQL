@@ -17,6 +17,7 @@ class HealthMonitorTest(unittest.TestCase):
 
     @mock.patch.object(requests, "request")
     def test_check_success_result(self, mock_get):
+        """Tests sending a get request and getting the expected "success" results"""
         mock_response = mock.Mock()
 
         mock_response.status_code = http.HTTPStatus.OK
@@ -30,6 +31,7 @@ class HealthMonitorTest(unittest.TestCase):
 
     @mock.patch.object(requests, "request")
     def test_check_filed_with_pattern_not_found(self, mock_get):
+        """Tests sending a get request and getting the expected failed results"""
         mock_response = mock.Mock()
         mock_response.status_code = http.HTTPStatus.OK
         mock_response.content = f" some response text, additional response text".encode()
@@ -42,6 +44,7 @@ class HealthMonitorTest(unittest.TestCase):
 
     @mock.patch.object(requests, "request")
     def test_check_netwrok_error(self, mock_get):
+        """Test network error case, we catch the error and do not crash"""
         mock_get.side_effect = requests.exceptions.ConnectionError
         result = self._web_monitor.check()
         # dummy timedelta value just for the test

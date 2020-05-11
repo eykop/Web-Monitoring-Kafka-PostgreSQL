@@ -10,6 +10,7 @@ class ConsumerTest(unittest.TestCase):
 
     @mock.patch("kafka_helper.consumer.KafkaConsumer")
     def test_failed_to_connect(self, mock_kafka_consumer):
+        """Tests failure on connecting"""
         mock_kafka_consumer.side_effect = NoBrokersAvailable
         kf_consumer = Consumer("192.168.99.100:9092", "topic")
         self.assertEqual(False,kf_consumer.connect())
@@ -17,6 +18,7 @@ class ConsumerTest(unittest.TestCase):
 
     @mock.patch("kafka_helper.consumer.KafkaConsumer")
     def test_connected_successfully(self, mock_kafka_consumer):
+        """Tests success on connecting"""
         mock_kafka_consumer.return_value = mock.Mock()
         kf_consumer = Consumer("192.168.99.100:9092", "topic")
         self.assertEqual(True, kf_consumer.connect())
@@ -30,7 +32,9 @@ class ConsumerTest(unittest.TestCase):
          callable lambda function.
         """
         def dummy_mocking_consumer(topic, bootstrap_servers, auto_offset_reset):
+            """dummy mocked consumer, it just returns a list of messages!"""
             return [{"message": 1}]*10
+
         mock_kafka_consumer.side_effect = dummy_mocking_consumer
         kf_consumer = Consumer("192.168.99.100:9092", "topic")
         self.assertEqual(True, kf_consumer.connect())
