@@ -160,13 +160,17 @@ if you provided different database and table names make sure you update the valu
 host=192.168.99.100:9092
 topic=web_checking
 bulk_count=1000
+group_id=db_writer
 ```
 1. The host of course is the Kafka server address with its port.
 2. The topic is the one we will use - depending on your Kafka settings you might need to create the topic, this 
 demo assumes it is already created or that the Kafka has auto create topic configuration enabled.
 3. The bulk_count key - is how many web check results we accumulate before we flush the Kafka producer buffer 
 (for testing purpuse it might be better to set this to a small number of 10 or 5 results).
-
+4. The group_id key is the Kfaka consumer group our consumer will join, this is important since we don't 
+want our consumer to keep reading the same messages and insert duplicated entries to the database evrytime it 
+restarts or every it a new consumer(that does the same job) subscribe to our topic.
+ 
 **kafka server please note this solution does not handle Kafka authentication (for example user and password)
 this might be add in the future or your contribution is welcomed.**
 
@@ -210,7 +214,8 @@ There some some unittests for each one of the components, they are regular pytho
 ## Future Improvements:
 * Authentication with Kafka.
 * Better SQL tables (separate static ad dynamic data between 2 tables.)
-* Allow Post, Delete, Options web methods for monitoring.
+* Better allow Post, Delete, Options web methods for monitoring.
+* Improve Partitions and Groups for Kafka Clients.
 * Provide script that query the database web monitoring results.
 * Add some more unittests.
 * Use Kafka Connectors(using Debezium) to sink results directly into the database. 
