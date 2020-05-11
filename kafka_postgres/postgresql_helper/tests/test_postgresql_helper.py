@@ -17,7 +17,7 @@ class PostgreSQLClientTest(unittest.TestCase):
             MessageJsonKeys.MATCHES: 'yahoo.com"><link rel="preconnect" ',
             MessageJsonKeys.METHOD: 'get',
             MessageJsonKeys.PATTERN: "re.compile('(yahoo).+')",
-            MessageJsonKeys.IS_PATTER_FOUND: True,
+            MessageJsonKeys.IS_PATTERN_FOUND: True,
             MessageJsonKeys.RESPONSE_TIME_SECS: 0.317258,
             MessageJsonKeys.STATUS_CODE: 200,
             MessageJsonKeys.STATUS_CODE_OK: True,

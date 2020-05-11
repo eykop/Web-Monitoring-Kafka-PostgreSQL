@@ -113,9 +113,10 @@ class PostgreSqlClient:
                 psycopg2.errors.SyntaxError,
                 psycopg2.errors.InvalidTextRepresentation,
                 psycopg2.errors.UndefinedColumn,
+                psycopg2.errors.UndefinedTable,
                 psycopg2.errors.NotNullViolation,
                 TypeError) as error:
-            log.error("An error occurred during insertion of result to data base table table %s , details: %s",
+            log.error("An error occurred during insertion of result to database table table %s , details: %s",
                       self._table_name, error)
             raise DataBaseOperationError(error)
 
@@ -128,10 +129,10 @@ class PostgreSqlClient:
             self._cursor.execute(sql,
                                  (result[MessageJsonKeys.URL],
                                   result[MessageJsonKeys.STATUS_CODE],
-                                  result[MessageJsonKeys.STATUS_CODE] != 200,
+                                  result[MessageJsonKeys.STATUS_CODE_OK] != 200,
                                   result[MessageJsonKeys.RESPONSE_TIME_SECS],
                                   result[MessageJsonKeys.METHOD],
-                                  result[MessageJsonKeys.IS_PATTER_FOUND],
+                                  result[MessageJsonKeys.IS_PATTERN_FOUND],
                                   result[MessageJsonKeys.PATTERN],
                                   result[MessageJsonKeys.MATCHES][:255])
                                  )
@@ -143,8 +144,9 @@ class PostgreSqlClient:
                 psycopg2.errors.UndefinedTable,
                 psycopg2.errors.SyntaxError,
                 TypeError) as error:
-            log.error("An error occurred during insertion of result to data base table table %s , details: %s",
+            log.error("An error occurred during insertion of result to database table table %s , details: %s",
                       self._table_name, error)
+
             raise DataBaseOperationError(error)
 
     def execute_query(self, query):

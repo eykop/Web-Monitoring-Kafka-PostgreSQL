@@ -102,19 +102,19 @@ CREATE TABLE web_check (
 
 To check the table creation, we run the following command (still within the container sql console):
 ```
-\dt
+psql#>\dt
 
           List of relations
- Schema |   Name    | Type  |  Owner   
+ Schema |   Name    | Type  |  Owner
 --------+-----------+-------+----------
  public | web_check | table | postgres
 (1 row)
 
 
-\d web_check
+psql#>\d web_check
 
                                              Table "public.web_check"
-      Column       |          Type          | Collation | Nullable |                    Default                    
+      Column       |          Type          | Collation | Nullable |                    Default 
 -------------------+------------------------+-----------+----------+-----------------------------------------------
  request_id        | integer                |           | not null | nextval('web_check_request_id_seq'::regclass)
  url               | character varying(255) |           | not null | 
@@ -149,7 +149,7 @@ password=mysecretpassword
 table_name=web_check
 ```
 Note here the database and the table_name are the names we just created in the PostgreSQL section above, 
-if you provided different data base and table names make sure you update the values in this section. 
+if you provided different database and table names make sure you update the values in this section. 
 **We might need to change the user name and password accordingly to match our server.**
 
 

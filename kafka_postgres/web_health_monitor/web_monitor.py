@@ -49,7 +49,7 @@ class HealthMonitor:
             before_request = datetime.now()
             response = requests.request(self._request_type, self._url, params=params, **kwargs)
             status_code = response.status_code
-            content = response.content.decode('utf-8')
+            content = response.content.decode(response.encoding).strip()
             response_time = response.elapsed.total_seconds()
 
             match = self._verification_regex.search(content)
@@ -58,26 +58,27 @@ class HealthMonitor:
                 match_string = match.group()
 
         except (requests.exceptions.ConnectionError, urllib3.exceptions.NewConnectionError) as err:
-            time_delta = datetime.now() - before_request
-            status_code = HTTPStatus.NOT_FOUND
-            response_time = time_delta.total_seconds()
-            has_pattern_in_response_body = False
             raise WebMonitorException(err)
+
 
         return {
             MessageJsonKeys.STATUS_CODE: status_code,
-            MessageJsonKeys.STATUS_CODE_OK:  status_code == HTTPStatus.OK,
+            MessageJsonKeys.STATUS_CODE_OK:  status_code == self.success_status_code,
             MessageJsonKeys.URL: self._url,
             MessageJsonKeys.METHOD: self._request_type,
             MessageJsonKeys.PATTERN: self._raw_regex,
             MessageJsonKeys.MATCHES: match_string,
             MessageJsonKeys.RESPONSE_TIME_SECS: response_time,
-            MessageJsonKeys.IS_PATTER_FOUND: has_pattern_in_response_body
+            MessageJsonKeys.IS_PATTERN_FOUND: has_pattern_in_response_body
         }
 
     @property
     def monitor_interval_in_sec(self) -> int:
         """Returns the monitor interval in seconds"""
         return self._sampling_interval
+
+    @property
+    def success_status_code(self):
+        return self._success_status
 
 
