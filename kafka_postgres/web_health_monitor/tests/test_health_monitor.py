@@ -43,7 +43,7 @@ class HealthMonitorTest(unittest.TestCase):
         self.assertEqual(False, result["pattern_found"])
 
     @mock.patch.object(requests, "request")
-    def test_check_netwrok_error(self, mock_get):
+    def test_check_network_error(self, mock_get):
         """Test network error case, we catch the error and do not crash"""
         mock_get.side_effect = requests.exceptions.ConnectionError
         result = self._web_monitor.check()

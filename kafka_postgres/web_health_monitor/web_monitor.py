@@ -60,7 +60,6 @@ class HealthMonitor:
         except (requests.exceptions.ConnectionError, urllib3.exceptions.NewConnectionError) as err:
             raise WebMonitorException(err)
 
-
         return {
             MessageJsonKeys.STATUS_CODE: status_code,
             MessageJsonKeys.STATUS_CODE_OK:  status_code == self.success_status_code,

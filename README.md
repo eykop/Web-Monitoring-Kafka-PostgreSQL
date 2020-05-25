@@ -9,7 +9,7 @@ The Kafka consumer will consume the results which in turn will be saved in Postg
 
 ## Run environment and requirement
 
-To be able to run we will need to prepare a working environment with the 
+To be able to run, we will need to prepare a working environment with the 
 following requirements:
 
 * python 3 
@@ -19,7 +19,7 @@ following requirements:
 * PostgreSQL server
 * Editing require configuration file.
 
-I will not cover running Kafka and PsotgreSQL server, there are many other totrials
+I will not cover running Kafka and PsotgreSQL server, there are many other tutorials
 on the internet that cover that.
 some are:
 
@@ -29,7 +29,7 @@ it will raise Kafka, Zookeeper
 and PostgreSQL server (and some other server not needed by this solution).
 * [docker-kafka](https://github.com/spotify/docker-kafka)  
 This is and old docker for Kafka server and Zookeeper, but still works.
-We will still need a postgreSQL server if we go with seond option that 
+We will still need a PostgreSQL server if we go with second option that 
 can be achieved by the running the following command:
 
 ```
@@ -73,7 +73,7 @@ pip3 install -r requirements.txt
 Before we run, we need to create the database and the database table for the Web monitor to be able to
 write entries to.
 
-If we have selected to runa PostgreSQL docker container we log to it by the following command:
+If we have selected to run a PostgreSQL docker container we log to it by the following command:
 ```
 docker exec -it my-postgres "/bin/bash"
 ``` 
@@ -166,9 +166,9 @@ group_id=db_writer
 2. The topic is the one we will use - depending on your Kafka settings you might need to create the topic, this 
 demo assumes it is already created or that the Kafka has auto create topic configuration enabled.
 3. The bulk_count key - is how many web check results we accumulate before we flush the Kafka producer buffer 
-(for testing purpuse it might be better to set this to a small number of 10 or 5 results).
-4. The group_id key is the Kfaka consumer group our consumer will join, this is important since we don't 
-want our consumer to keep reading the same messages and insert duplicated entries to the database evrytime it 
+(for testing purpose it might be better to set this to a small number of 10 or 5 results).
+4. The group_id key is the Kafka consumer group our consumer will join, this is important since we don't 
+want our consumer to keep reading the same messages and insert duplicated entries to the database every time it 
 restarts or every it a new consumer(that does the same job) subscribe to our topic.
  
 **kafka server please note this solution does not handle Kafka authentication (for example user and password)

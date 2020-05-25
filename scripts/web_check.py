@@ -74,7 +74,7 @@ def start_web_monitoring_database_reporting(kafka_config: dict, postgresql_confi
         sys.exit(1)
 
     except KeyboardInterrupt:
-        log.info("Received Ctrl-C, closing connection and existing...")
+        log.info("Received Ctrl-C, closing connection and exiting...")
         consumer.close()
         db_client.close()
         sys.exit(0)
@@ -119,6 +119,6 @@ def start_web_monitoring_website_checking(kafka_config: dict, web_monitor_config
         sys.exit(1)
 
     except KeyboardInterrupt:
-        log.info("Received Ctrl-C, closing connection and existing...")
+        log.info("Received Ctrl-C, closing connection and exiting...")
         producer.close()
         sys.exit(0)
