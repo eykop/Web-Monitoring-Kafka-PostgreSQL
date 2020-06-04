@@ -164,20 +164,25 @@ class PostgreSQLClientTest(unittest.TestCase):
         psycopg2.connect = mock.Mock()
         psycopg2.connect.return_value = connect_mock
 
-        client = PostgreSqlClient("192.168.99.100", "web_monitoring", "postgres", "mysecretpassword", "table_name23", 2)
+        client = PostgreSqlClient("192.168.99.100", "web_monitoring", "postgres", "mysecretpassword", "table_name23")
         self.assertEqual(True, client.connect())
         self.assertEqual(True, client.connected)
+        # for the version execute call..
+        self.assertEqual(1, len(cursor_mock.execute.mock_calls))
 
-        # we call twice - our bulk limit for this test is 2 , the insertion will happen in the second call.
+        # we call 2 times - our bulk limit for this test is 3 , the insertion will happen in the second call.
+
         client.bulk_insert_monitoring_results(self._test_result)
         client.bulk_insert_monitoring_results(self._test_result)
-        self.assertEqual(2, len(cursor_mock.execute.mock_calls))
+
+        # check 3 since we call cursure() three times 2 for teh bulk and 1 for the version!
+        self.assertEqual(3, len(cursor_mock.execute.mock_calls))
 
     def test_insert_bulk_web_monitor_result_to_db_failed(self):
         """Tests bulk insertion to table is failed"""
         # we build mock from bottom to up
         cursor_mock = mock.Mock()
-        cursor_mock.execute.side_effect = [mock.Mock(), DataBaseOperationError]
+        cursor_mock.execute.side_effect = [mock.Mock(), mock.Mock(), DataBaseOperationError]
         cursor_mock.fetchone = mock.Mock()
         cursor_mock.fetchone.return_value = "Some PSQL version string"
 
@@ -187,7 +192,7 @@ class PostgreSQLClientTest(unittest.TestCase):
         psycopg2.connect = mock.Mock()
         psycopg2.connect.return_value = connect_mock
 
-        client = PostgreSqlClient("192.168.99.100", "web_monitoring", "postgres", "mysecretpassword", "table_name23", 2)
+        client = PostgreSqlClient("192.168.99.100", "web_monitoring", "postgres", "mysecretpassword", "table_name23")
         self.assertEqual(True, client.connect())
         self.assertEqual(True, client.connected)
 
